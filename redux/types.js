@@ -1,0 +1,4 @@
+export const SET_TOPS_TRACKS = "SET_TOPS_TRACKS";
+export const SET_FINDED_TRACKS = "SET_FINDED_TRACKS";
+
+
