@@ -1,1 +1,3 @@
-# room4
+npm i
+
+expo start

@@ -16,13 +16,13 @@ import {
   Alert,
   TouchableHighlight,
 } from "react-native";
+import { API_KEY } from "../../utils/index";
 
 export default function searchTracksScreen() {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const API_KEY = "9c7a521f8b8fed9d910ee408248ab229";
   const dispatch = useDispatch();
   const findedTracks = useSelector((state) => state.findedTracks);
 
@@ -35,23 +35,26 @@ export default function searchTracksScreen() {
   const submitRequest = () => {
     setIsLoaded(true);
     if (searchQuery.trim().length > 0) {
-      fetch(
-        `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${searchQuery}&api_key=${API_KEY}&format=json`
-      )
-        .then((res) => res.json())
+      axios
+        .get(
+          `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${searchQuery}&api_key=${API_KEY}&format=json`
+        )
         .then((data) => {
           setIsLoaded(false);
-          if (data.results.trackmatches.track.length < 1) {
+          if (data.data.results.trackmatches.track.length < 1) {
             Alert.alert("No tracks(");
           }
           keyboardHide();
-          return dispatch(setFindedTracks(data.results.trackmatches.track));
+          return dispatch(
+            setFindedTracks(data.data.results.trackmatches.track)
+          );
         });
     } else {
       setIsLoaded(false);
       Alert.alert("Enter title!");
     }
   };
+  
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
