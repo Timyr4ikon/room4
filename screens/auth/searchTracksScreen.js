@@ -9,8 +9,7 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Platform,
-  KeyboardAvoidingView,
+  ActivityIndicator,
   Keyboard,
   TouchableWithoutFeedback,
   FlatList,
@@ -18,9 +17,10 @@ import {
   TouchableHighlight,
 } from "react-native";
 
-export default function RegisterScreen({ navigation }) {
+export default function searchTracksScreen() {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const API_KEY = "9c7a521f8b8fed9d910ee408248ab229";
   const dispatch = useDispatch();
@@ -33,65 +33,68 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const submitRequest = () => {
-    console.log(findedTracks);
+    setIsLoaded(true);
     if (searchQuery.trim().length > 0) {
-      axios
-        .get(
-          `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${searchQuery}&api_key=${API_KEY}&format=json`
-        )
+      fetch(
+        `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${searchQuery}&api_key=${API_KEY}&format=json`
+      )
+        .then((res) => res.json())
         .then((data) => {
+          setIsLoaded(false);
+          if (data.results.trackmatches.track.length < 1) {
+            Alert.alert("No tracks(");
+          }
           keyboardHide();
-          return dispatch(
-            setFindedTracks(data.data.results.trackmatches.track)
-          );
+          return dispatch(setFindedTracks(data.results.trackmatches.track));
         });
     } else {
+      setIsLoaded(false);
       Alert.alert("Enter title!");
     }
   };
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS == "ios" ? "padding" : "height"}
-        >
-          <TextInput
-            style={styles.input}
-            textAlign={"center"}
-            onFocus={() => setIsShowKeyboard(true)}
-            value={searchQuery}
-            placeholder={"Enter track title"}
-            onChangeText={(value) => setSearchQuery(value)}
-          />
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.btn}
-            onPress={keyboardHide}
-          >
-            <Text style={styles.btnTitle} onPress={submitRequest}>
-              Search
-            </Text>
-          </TouchableOpacity>
-          {findedTracks.length > 0 ? (
-            <FlatList
-              style={styles.list}
-              data={findedTracks}
-              renderItem={({ item }) => {
-                return (
-                  <TouchableHighlight style={styles.item}>
-                    <View>
-                      <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={styles.itemTrack}>{item.artist}</Text>
-                    </View>
-                  </TouchableHighlight>
-                );
-              }}
-              keyExtractor={() => shortid.generate()}
+        {isLoaded ? (
+          <ActivityIndicator size="large" color="purple" />
+        ) : (
+          <>
+            <TextInput
+              style={styles.input}
+              textAlign={"center"}
+              onFocus={() => setIsShowKeyboard(true)}
+              value={searchQuery}
+              placeholder={"Enter track title"}
+              onChangeText={(value) => setSearchQuery(value)}
             />
-          ) : (
-            <Text style={styles.sorryTitle}>No such result...(</Text>
-          )}
-        </KeyboardAvoidingView>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.btn}
+              onPress={keyboardHide}
+            >
+              <Text style={styles.btnTitle} onPress={submitRequest}>
+                Search
+              </Text>
+            </TouchableOpacity>
+            {findedTracks.length > 0 && (
+              <FlatList
+                style={styles.list}
+                data={findedTracks}
+                renderItem={({ item }) => {
+                  return (
+                    <TouchableHighlight style={styles.item}>
+                      <View>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemTrack}>{item.artist}</Text>
+                      </View>
+                    </TouchableHighlight>
+                  );
+                }}
+                keyExtractor={() => shortid.generate()}
+              />
+            )}
+          </>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -123,14 +126,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignItems: "center",
     marginHorizontal: 70,
-    ...Platform.select({
-      ios: {
-        backgroundColor: "transparent",
-      },
-    }),
+    backgroundColor: "transparent",
   },
   btnTitle: {
-    color: Platform.OS === "ios" ? "purple" : "#000",
+    color: "purple",
     fontSize: 18,
     fontWeight: "600",
   },

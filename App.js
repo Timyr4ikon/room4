@@ -1,12 +1,14 @@
 import * as React from "react";
 import { Provider } from "react-redux";
 import store from "./redux/store";
-import { View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import LoginScreen from "./screens/auth/LoginScreen";
-import RegisterScreen from "./screens/auth/RegisterScreen";
-import { Foundation, Ionicons } from "@expo/vector-icons";
+import TopTracksScreen from "./screens/auth/topTracksScreen";
+import searchTracksScreen from "./screens/auth/searchTracksScreen";
+import {
+  Foundation,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +21,7 @@ export default function App() {
             tabBarIcon: ({ focused, color, size }) => {
               let iconName;
               let iconSize = 24;
+              let iconColor = "white";
               if (route.name === "TrendsPage") {
                 iconName = focused
                   ? "ios-information-circle"
@@ -32,10 +35,14 @@ export default function App() {
                   />
                 );
               } else if (route.name === "SearchPage") {
-                iconName = focused ? "ios-list-box" : "ios-list";
                 iconSize = focused ? 32 : 24;
+                iconColor = focused ? "purple" : "white";
                 return (
-                  <Ionicons name={iconName} size={iconSize} color={color} />
+                  <MaterialCommunityIcons
+                    name="music-circle"
+                    size={iconSize}
+                    color={iconColor}
+                  />
                 );
               }
             },
@@ -48,10 +55,11 @@ export default function App() {
             style: {
               borderTopColor: "rgb(24, 24, 24)",
             },
+            showLabel: false,
           }}
         >
-          <Tab.Screen name="TrendsPage" component={LoginScreen} />
-          <Tab.Screen name="SearchPage" component={RegisterScreen} />
+          <Tab.Screen name="TrendsPage" component={TopTracksScreen} />
+          <Tab.Screen name="SearchPage" component={searchTracksScreen} />
         </Tab.Navigator>
       </NavigationContainer>
     </Provider>
